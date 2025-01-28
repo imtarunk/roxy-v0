@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  rollNo      BigInt       @id @unique // Primary key
+  studentName String
+  batch       Int
+  course      Int
+  attendance  Attendance[] // Relation to Attendance table
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Day {
+  id         Int          @id @default(autoincrement()) // Primary key
+  date       DateTime     @unique // Unique date for each day
+  attendance Attendance[] // Relation to Attendance table
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement()) // Primary key
+  student   Student  @relation(fields: [studentId], references: [rollNo])
+  studentId BigInt // Foreign key linking to Student
+  day       Day      @relation(fields: [dayId], references: [id])
+  dayId     Int // Foreign key linking to Day
+  status    Boolean // True for present, False for absent
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, dayId]) // Ensures a student can have only one record per day
+}
